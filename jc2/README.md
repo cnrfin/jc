@@ -368,3 +368,16 @@ design in JC2, with how well each rebuild (JC1 mesh + JC2 texture) came out:
 - **Poor:** Maryen (thin branches) and Ehsp (pose mismatch).
 - **Misleading names:** Tweengo/Twingo, Ticker/Tiki and Ehsp/Chamelemon are different
   designs.
+
+### JC1 creatures wearing JC2 skins (shape unchanged)
+
+`tools/jc1_reskin.py <jc1 file> <jc2 model.bin> out.npz` keeps the JC1 creature's own
+geometry and gives it per-corner UVs into its JC2 counterpart's texture:
+- The JC1 mesh is fitted onto the JC2 beast **only** to find where each corner lands on
+  the JC2 skin.
+- The fitted shape is then thrown away.
+
+Results for the eight pairs in `jc1_jc2_species.json`:
+- **Clean:** Marrdreg, Raddreg, Patdreg, Geenwee, Maryen.
+- **Usable:** Dogle.
+- **Noisier patterns:** Yolga and Ehsp.
