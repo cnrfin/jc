@@ -63,24 +63,17 @@ and groups the 881 skinned models by it:
   merge needs a template mesh fitted onto each beast (see the plan in the chat log /
   top-level discussion).
 
-### How the beast models are laid out — PATTERN CONFIRMED, MEANING HYPOTHESIS
+### How the beast models are laid out — PATTERN CONFIRMED
 
 The skinned models are one contiguous run, files **1785–2638**. From 1785 they come in
-groups of 12, and in 31 of the first 40 groups slots 0, 4 and 8 are the same mesh:
+groups of 12, and in 31 of the first 40 groups slots 0, 4 and 8 are the same mesh.
+Blocks of 120 files (10 groups) repeat with 283 of 360 meshes unchanged.
 
-```
-group = [ base, A1, A2, A3,  base, B1, B2, B3,  base, C1, C2, C3 ]
-```
-
-The reading that fits: one base beast with three branches, each three forms long. The FMV
-names agree (`BIRDA3`, `BIRDC3`, `DOGA3`, `GINUIB3`...: family, branch, final form 3), and
-there are 8 families on the movie list. Blocks of 120 files (10 groups) repeat with 283 of
-360 meshes unchanged, which looks like the same lines stored once per element or palette.
-
-If that holds, **JC2's visual change on a merge is not a blend at all: it picks one of
-these hand-made forms**, presumably from the beast's element levels. That is the
-mechanism a JC1-style merge would replace. Pinning it down means finding the code that
-turns a beast's state into a model file index.
+What this is NOT: merging. In JC2 a merge does not change appearance at all; it only
+passes on attacks/abilities. Each beast belongs to a species (Chu, Og, Slimy...) with
+four elemental variants (fire, earth, wind, water) that differ in colour and stats. The
+repeats above are those variants, plus the growth forms, stored as separate files that
+share a mesh. Which slot is which element/form is still to be mapped.
 
 ## Executable
 
