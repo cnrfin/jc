@@ -42,29 +42,86 @@ A model file is `u32 n; u32 offset[n]` followed by the sections. A beast (e.g. 1
 4: a 16-byte flags block, the geometry (`0IVX00.1` / `LDMX00.1` / `NIKS00.1` tags), one
 `TIM2` texture, and an 11-entry block that looks like animation data.
 
-**Decoded and verified by rendering** (`tools/xmdl.py`, `tools/tim2.py`,
-`tools/render_tex.py`):
+**Decoded and verified** (`tools/xmdl.py`, `tools/tim2.py`, `tools/jc2_gltf.py`). A beast
+exports to glTF that passes the Khronos validator with 0 errors and animates correctly in
+three.js.
 
-- **Node table** at geometry `+0xB0`, count at `+0x24`, stride 0x50:
-  `u32 type; u32 0; u32 0; s16 a; s16 depth; s16 parent+1; s16 firstChild+1;
-  u32 nextSibling+1; ...; vec4 T @+0x20; vec4 R (radians) @+0x30; vec4 S @+0x40`.
-  `type` bits: 2 = has child, 4 = has sibling, 1 = always set. `a` cycles 4/5/6, so a
-  joint is three single-axis rotation nodes. That is why a beast has 61–96 nodes but
-  only about 24 skinning slots.
-- **Geometry** is a VIF DMA chain after the node table. Each batch is:
-  - `REF` tags, which upload up to 4 palette matrices.
-  - A `CNT` tag whose unused address field holds the batch's 4 palette slots (0xFF =
-    none).
+### Geometry section layout (from the loader `func_00175EB0`)
+
+The counts are at `+0x20`: `objects, nodes, meshes, materials, parts, joints`. The tables
+follow from `+0x40` in this order:
+
+| table | stride / size | what |
+|---|---|---|
+| objects | 0x20 | |
+| nodes | 0x50 | `u32 type; u32; u32; s16 a; s16 depth; s16 parent; s16 child; u32 sibling;` then `T` @+0x20, `R` (radians) @+0x30, `S` @+0x40. Node 0 is the root/mesh holder (type 0x32) |
+| meshes | 0x30 + 8·parts (+8 if odd) | |
+| materials | 0x60 | |
+| parts | 0x30 + (qwc+1)·16 | the VIF DMA chain below |
+| joints | 0x90 | one per node: `u32 a; u32 flags; u32 child; u32 sibling; f32 roll(deg) @+0x10;` T/R/S copy @+0x20; **inverse bind matrix** (4x4, row-vector) @+0x50 |
+
+- **Rotation order:** local matrix = `T · Rz · Ry · Rx · S` (`func_00144170`). Checked
+  against the stored inverse bind matrices: exact.
+- **Joint flags** (`+0x04`):
+
+  | flag | meaning |
+  |---|---|
+  | `1` | gets a skinning matrix; palette slot = its order among flagged joints (`func_00143D30`) |
+  | `2` | does not inherit parent rotation (feet stay level) |
+  | `4` | a=4 chain is 3-joint IK |
+  | `0x10` | IK bend direction |
+  | `0x80` | yaw-first aim |
+  | `0x400` | ground marker (parent x,z at y=0) |
+
+- **Geometry** is a VIF DMA chain. Each batch is:
+  - `REF` tags, which the loader (`func_0014C4E0`) patches to
+    `matrixBuffer + idx*0x80`, `idx` = byte 2 of the tag's `STCYCL` word.
+  - A `CNT` tag whose spare address word lists the batch's 4 palette slots.
   - `UNPACK`s with `STCYCL 4,1`, giving four quadwords per vertex:
-    - `0x45` V3-32 position, already in bind pose (world space)
+    - `0x45` V3-32 position (bind pose, world space)
     - `0x46` V2-32 UV (0..1, no flip)
-    - `0x47` V4-16 normal (`x,y,z` /32767, `w` = 0x7FFF)
-    - `0x48` V4-8 weights, one byte per palette slot, summing to 255
-  - Each batch is one triangle strip of `NLOOP` vertices (GIF tag at `0x41`).
-- **TIM2**: standard, 8-bit indexed with a CSM1-swizzled 256-colour CLUT, alpha 0..128.
+    - `0x47` V4-16 normal (/32767)
+    - `0x48` V4-8 weights (one byte per palette slot, sum 255)
+  - Each batch is one triangle strip.
+- **TIM2:** standard, 8-bit indexed with a CSM1-swizzled 256-colour CLUT, alpha 0..128.
 
-**Open:** the table that maps palette slot (0..23) to node, and the animation block.
-Both are best read from the loader in the decompiled C rather than guessed.
+### Animation (section 3 of the model file)
+
+The section is `u32 n` then (offset, size) pairs, one per clip. A clip has a header of
+`(offset, size)` tables; the second table is the channel table: `u16 count; u16 frames
+(0x8000 = loop)`, then `count` × `{u16 node; u16 mask; u32 valuesOff; u32 keysOff}`
+(offsets from the table start; 0 = no data).
+
+- **Mask bits** are read 13 → 5 (`func_00145460`): 13–11 scale XYZ, 10–8 rotation XYZ,
+  7–5 translation XYZ.
+- **Keys:** per component, a `u16` header (`kind = hd>>13`, `n = hd & 0x1FFF`) and, for
+  `kind != 0`, `n` frame numbers. Frame 0 is implicit.
+- **Values (f32) per kind:**
+
+  | kind | layout |
+  |---|---|
+  | 0 | n constants |
+  | 1, 2, 3 | n+1 values: 3 = linear, 1 and 2 = step |
+  | 4, 5 | 2n+1: (value, tangent) pairs, last tangent omitted |
+  | 6 | 3n+1: `v0, out0, (in, v, out)…, (in, v)` |
+  | 7 | 2n+2: (value, tangent) per key |
+
+  Tangents are per segment (Hermite).
+
+### Beasts are animated with IK (`func_00142B00`, `func_00143960`, `func_00143520`)
+
+Joints come in `a` = 4/5/6 runs.
+- **The target:** an `a`==6 joint's translation slot holds a **model-space target
+  position**, not a local offset. At rest it is the bind world position.
+- **The aim:** the `a`==4 joint takes its animated rotation as normal. The `a`==5 joint
+  after it is then aimed so that local +X points at the target:
+  `Rz(atan2(y,x)) · Ry(−atan2(z, r)) · Rx(roll)`.
+- **3-joint chains (flag 4):** the hip and knee are then bent with the law of cosines,
+  using the thigh and shin lengths (the X translation of the next two joints).
+- **The joint after the IK chain** uses its own animated rotation, and flag 2 keeps it
+  world-aligned.
+
+`tools/jc2_gltf.py` implements all of this and bakes every frame into the glTF.
 
 ## Do beasts share topology like JC1? — NO (CONFIRMED)
 
