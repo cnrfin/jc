@@ -63,6 +63,25 @@ and groups the 881 skinned models by it:
   merge needs a template mesh fitted onto each beast (see the plan in the chat log /
   top-level discussion).
 
+### How the beast models are laid out — PATTERN CONFIRMED, MEANING HYPOTHESIS
+
+The skinned models are one contiguous run, files **1785–2638**. From 1785 they come in
+groups of 12, and in 31 of the first 40 groups slots 0, 4 and 8 are the same mesh:
+
+```
+group = [ base, A1, A2, A3,  base, B1, B2, B3,  base, C1, C2, C3 ]
+```
+
+The reading that fits: one base beast with three branches, each three forms long. The FMV
+names agree (`BIRDA3`, `BIRDC3`, `DOGA3`, `GINUIB3`...: family, branch, final form 3), and
+there are 8 families on the movie list. Blocks of 120 files (10 groups) repeat with 283 of
+360 meshes unchanged, which looks like the same lines stored once per element or palette.
+
+If that holds, **JC2's visual change on a merge is not a blend at all: it picks one of
+these hand-made forms**, presumably from the beast's element levels. That is the
+mechanism a JC1-style merge would replace. Pinning it down means finding the code that
+turns a beast's state into a model file index.
+
 ## Executable
 
 - Entry `0x100008`, `$gp = 0x6CBC70`. Main code `0x100000–0x4E3E60`, data after it,
@@ -79,6 +98,12 @@ python -m spimdisasm singleFileDisasm SLUS_203.09 disasm/asm \
 - Merge UI strings: `"Merge OK"` at `0x50C9C0`, `"Merge fee"` at `0x50ED70`. Neither is
   loaded by a direct `lui/addiu` pair, so they are reached through a pointer table.
   Following that table is the way into the merge code.
-- Not yet decompiled to C. Stock Ghidra has no R5900 support (`lq`/`sq` appear in every
-  function prologue), so it needs the ghidra-emotionengine-reloaded extension, or m2c
-  (`-t mipsee-gcc-c`) run over `disasm/funcs/*.s`.
+- **Decompiled to C with m2c** (`-t mipsee-gcc-c`): 9,818 of 9,855 functions. Switch
+  statements need their jump tables: `tools/fix_jtbl.py` copies the table from the data
+  section into the function file and labels its targets. The 37 that still fail are
+  mostly data that the disassembler took for code.
+- The screen that uses the "Merges:" layout is set up by `func_0018AFA0`. It installs
+  `func_0018B0C0`, a switch with about 20 states (`func_0018B330` ... `func_0018C140`).
+  The same layout is also used by `func_00241A70` and `func_004358C0`.
+- Beast species names (Getchu, Volkaiser, Mothmanti...) sit around `0x688E00`. Item
+  records (stride 0x48, e.g. "Cocoon containing a" + species) are at `0x52CEF0`.
