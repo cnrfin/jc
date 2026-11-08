@@ -1,0 +1,12 @@
+{"_note": "JC2 1822 Redoble (first form, boar family, branch A). Read off ortho_grid views; (x, up, z), up = -Y.",
+ "nose":     [0.00, 1.20, -1.50],
+ "L_eye":    [0.45, 1.37, -0.61],
+ "L_mouth":  [0.25, 1.13, -0.30],
+ "chin":     [0.00, 0.94, -0.86],
+ "crown":    [0.00, 1.50, -0.55],
+ "withers":  [0.00, 1.55,  0.10],
+ "rump":     [0.00, 1.10,  1.14],
+ "belly":    [0.00, 0.30,  0.00],
+ "chest":    [0.00, 0.45, -0.60],
+ "L_ffoot":  [0.75, 0.05,  0.00],
+ "L_bfoot":  [0.35, 0.05,  1.25]}

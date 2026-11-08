@@ -398,3 +398,11 @@ Result for 1821 ↔ 1858:
   look row is clean from 0% to 100%.
 - **Still rough:** the 1821-look row at 75–100% is boxy, with stretched texture, and
   the mace separates from the body there.
+
+**Stage-matched pair.** Merges should pair the same growth stage (base with base, first
+form with first form): a merged beast's first form is a merge of both parents' first
+forms. Redoble 1822 (boar family, branch A, first form) ↔ Dongly 1858 (first form):
+`--a-only 15 --b-only 6`, landmarks in `landmarks/1822.json` and `1858.json`.
+- **Better than every earlier pair:** both looks read as hybrids across most of the
+  sweep.
+- **Still rough:** only Redoble's look at 100% (boxy).
