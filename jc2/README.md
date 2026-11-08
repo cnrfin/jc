@@ -280,3 +280,15 @@ Result for 1821 + 1858 (`--a-only 46,52,24 --b-only 6`):
 - **The look-A merges read as hybrids** at 25–75%.
 - **Still weak:** B's horned head and jaw are not reproduced (the head is morphed, not
   grouped), and legs distort near 100%.
+
+Second round (`--a-head` / `--b-head`):
+- **Heads are "look" parts:** shown only for the parent that supplies the look, like the
+  texture. They move as rigid pieces, anchored at the ring where each head meets its body.
+- **Inherited parts are hue-tinted** toward the chosen look.
+- **Pairs:** 1821 + 1858 (`--a-only 46,52,24 --b-only 6 --a-head 36 --b-head 31`) and
+  1821 + 1856 chameleon (`--b-only 6 --b-head 31`).
+- **Result:** the look-A rows hold up across the sweep. The look-B rows, which put B's
+  texture on the A-derived shared body, are the weakest: shards where the transferred UVs
+  stretch.
+- **A tried and rejected change:** rotating bones to follow the other beast's bone
+  directions flattened the legs (1858's limb paths end in splayed toes).

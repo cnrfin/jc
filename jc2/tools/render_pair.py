@@ -8,20 +8,24 @@ def lab(img, t): im = Image.fromarray(img); ImageDraw.Draw(im).text((4, 4), t, f
 def orig(path, t):
     m = J.parse_model(open(path, 'rb').read()); P, UV, T = TF.mesh(m); return lab(O.render([(P[T], UV[T], m['tex'])], yaw, S)[0], t)
 tex = [Z['texA'], Z['texB']]
+hue = [O.mean_hue(t) for t in tex]
+def tinted(k, look):
+    li = 0 if look == 'A' else 1
+    return tex[k] if k == li else O.hue_rotate(tex[k], ((hue[li] - hue[k] + .5) % 1) - .5)
 def draw(P, look, groups, t):
     uv, tx = Z['look%s_uv' % look], Z['look%s_tex' % look]
     sel = np.isin(Z['group'], groups); parts = []
     for k in (0, 1):
         m = sel & (tx == k)
-        if m.any(): parts.append((P[Z['tris'][m]], uv[m], tex[k]))
+        if m.any(): parts.append((P[Z['tris'][m]], uv[m], tinted(k, look)))
     return lab(O.render(parts, yaw, S)[0], t)
-row1 = [orig(sys.argv[2], 'original A'), draw(Z['shapeA'], 'A', [0, 1], 'family member A'),
-        orig(sys.argv[3], 'original B'), draw(Z['shapeB'], 'B', [0, 2], 'family member B'), np.full((S, S, 3), 30, np.uint8)]
+row1 = [orig(sys.argv[2], 'original A'), draw(Z['shapeA'], 'A', [0, 1, 3], 'family member A'),
+        orig(sys.argv[3], 'original B'), draw(Z['shapeB'], 'B', [0, 2, 4], 'family member B'), np.full((S, S, 3), 30, np.uint8)]
 rows = [np.hstack(row1)]
 for look in ('A', 'B'):
     r = []
     for w in (0, .25, .5, .75, 1):
         P = (1 - w) * Z['shapeA'] + w * Z['shapeB']
-        r.append(draw(P, look, [0, 1, 2], 'look %s  %d%%' % (look, w * 100)))      # JC1 OR rule: both groups on
+        r.append(draw(P, look, [0, 1, 2, 3 if look == 'A' else 4], 'look %s  %d%%' % (look, w * 100)))  # OR rule; head follows the look
     rows.append(np.hstack(r))
 Image.fromarray(np.vstack(rows)).save(sys.argv[4])
