@@ -333,3 +333,20 @@ converted.
 
 **Not yet verified:** loading in the game itself (needs the archive repack and PCSX2),
 and animations (none written yet).
+
+### JC1 family species that exist in JC2
+
+- **Species list:** JC2's beast list (item records "Cocoon containing a …" at
+  `0x52CEF0`, about 125 names) is the Divine Beast forms. JC1 lines reappear there,
+  e.g. Marrdreg → Mardreck, Patdreg → Patadreck and the *-lchu* line.
+- **Textures:** every form's model file (1785–2284) carries its own full-colour texture.
+- **Greyscale models:** files 2495–2638 are greyscale copies of those meshes, probably
+  the metal/statue variants.
+
+Same-design pairs fitted with `jc1_to_jc2.py` + `corner_uv.py` (JC1 mesh shaped onto the
+JC2 beast, wearing the JC2 texture):
+- **Good:** Geenwee 856 → 1846 and Yolga 920 → 1843.
+- **Messy:** Ehsp 867 → 1855 (JC1 stands tall, JC2 crouches).
+- **Fails:** serpents (no legs → too few landmarks).
+- **Merge 1846 ↔ 1843 on the shared mesh:** fine near each parent, rough at the far end
+  of each sweep.
