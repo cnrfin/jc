@@ -303,3 +303,33 @@ original geometry and texture, and only the other parent's shape is a morph targ
   other beast's shape.
 - **Storage scales with the number of species:** every species needs a morph target on
   every other species' mesh (N·(N−1) targets).
+
+## Writing JC2 model files; JC1 creatures in JC2 format
+
+`tools/xmdl_write.py` writes a JC2 model file (section 0 + XMDL geometry + TIM2) from a
+node list, rigidly skinned vertices, triangles and a texture.
+- **Layout:** follows the loader (`func_00175EB0`) and the game's own batch structure:
+  REF matrix uploads, CNT with palette slots, `STCYCL 4,1` vertex UNPACKs at
+  `0x45`–`0x48`, GIF tags, `MSCNT`.
+- **Templates:** fields of unknown meaning (materials, GIF tag words, section 0) are
+  copied from a template beast.
+- **Strips:** triangles are joined into strips with degenerate links, at most 4 palette
+  slots and 30 vertices per batch.
+- **Texture:** 256-colour TIM2 with a CSM1 palette and alpha 0..128.
+
+`tools/jc1_to_xmdl.py <jc1 family file> <template.bin> <out.bin>` converts a JC1 family
+creature:
+- **Skeleton:** the 25 bones become JC2 nodes (same Z·Y·X Euler order), every one a
+  palette joint.
+- **Pose and placement:** the frame-0 pose, scaled to height 2.0, turned to face the JC2
+  way, lowest point on y = 0.
+- **Visibility:** hidden part groups are left out.
+- **Texture:** the JC1 atlas padded to 256×256.
+
+**Verified:** the files read back through the same parser and exporter as the game's
+own files. Every non-degenerate triangle round-trips; FK matches the written bind
+matrices exactly; the exported GLB validates with 0 errors. 845, 867, 833 and 907
+converted.
+
+**Not yet verified:** loading in the game itself (needs the archive repack and PCSX2),
+and animations (none written yet).
