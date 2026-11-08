@@ -58,6 +58,8 @@ def curve(kind, frames, v):
     """Return f(frame) for one component. frames excludes the implicit key at 0."""
     if kind == 0:
         return (lambda f: v[0]) if v else None
+    if not frames:
+        return (lambda f: v[0]) if v else None
     F = [0] + list(frames)
     if kind in (1, 2, 3):                                    # value per key; 3 = linear, 1/2 treated as step
         P = v[:len(F)]; M = None
