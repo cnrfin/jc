@@ -44,9 +44,24 @@ on skinned models. The body is PS2 VIF/GIF packet data (UNPACK `0x6C` commands, 
 tags, float vertex data), so meshes are pre-built DMA chains, not a TMD-style list. A
 typical beast-sized file (e.g. 1691) is 2 sections: geometry 0x58E0 bytes + a TIM2.
 
-**Open:** do the beasts share topology like JC1's 49-model family? Next step is to parse
-the VIF UNPACK counts per `XMDL` and group skinned models by that signature, the same test
-`docs/MERGE_ALGORITHM.md` §"49 models share one topology" ran on JC1.
+Each geometry section is a run of VIF batches: `UNPACK V4-32` (header, addr 0),
+`UNPACK V3-32` (positions, addr 4, `num` = vertex count), `UNPACK V2-32` (UVs),
+`UNPACK V4-8` (colour/normal). Here, one batch means one strip of up to `num` vertices.
+
+## Do beasts share topology like JC1? — NO (CONFIRMED)
+
+`tools/xmdl_sig.py` takes each model's list of V3-32 vertex counts (one entry per batch)
+and groups the 881 skinned models by it:
+
+- **195 distinct signatures.** The largest group is 20 files.
+- Inside a group, the files are **the same beast**: the same mesh is stored once per element
+  or stage (the pattern repeats every 120 files, e.g. 1821/1825/1829, 1941/1945/1949,
+  2061..., 2181...). Positions are byte-identical, or at most 3 variants differing by
+  <0.08 units.
+- So different species never share a vertex layout. JC1 had 49 species on one mesh,
+  which is what made its per-vertex merge possible. JC2 has no such family; a JC1-style
+  merge needs a template mesh fitted onto each beast (see the plan in the chat log /
+  top-level discussion).
 
 ## Executable
 
