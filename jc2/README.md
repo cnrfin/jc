@@ -292,3 +292,14 @@ Second round (`--a-head` / `--b-head`):
   stretch.
 - **A tried and rejected change:** rotating bones to follow the other beast's bone
   directions flattened the legs (1858's limb paths end in splayed toes).
+
+Third round: **the body comes from the look parent** (`tools/render_pair2.py`). The family is
+built twice, once on each beast's own mesh (A + B's parts, and B + A's parts). A merge
+uses the family of whichever parent supplies the look, so both looks start from exact
+original geometry and texture, and only the other parent's shape is a morph target.
+- **Both members are exact.** The 50–100% rows of B's look are now clean (e.g. the
+  chameleon with the boar's ears).
+- **Remaining roughness is only at the far end of each row:** a body squeezed into the
+  other beast's shape.
+- **Storage scales with the number of species:** every species needs a morph target on
+  every other species' mesh (N·(N−1) targets).
