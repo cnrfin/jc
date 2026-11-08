@@ -350,3 +350,21 @@ JC2 beast, wearing the JC2 texture):
 - **Fails:** serpents (no legs → too few landmarks).
 - **Merge 1846 ↔ 1843 on the shared mesh:** fine near each parent, rough at the far end
   of each sweep.
+
+### The beast table: model file -> name — CONFIRMED
+
+The beast records are 260 bytes each, from `0x4E9A18`:
+- `u16 index` @+0x90, `u16 model` @+0x92 (archive file = model + 1305), name @+0x78.
+- The first 120 records name every form in the first element block (1785–1904); the
+  other three blocks are the element colourways of the same forms (file + 120·k).
+- The full list is in `jc2_beast_names.json`. Families include the Luch / *-chu* line
+  (1785–1796) and the boar's group: Vordrech 1821, Redoble, Mardreck, Blumen, Drech,
+  Patadreck, Radreck, Paradrager, Tikidrech, Tiki, Tiral, Giralooza.
+
+`jc1_jc2_species.json` lists the JC1 family creatures confirmed by eye to be the same
+design in JC2, with how well each rebuild (JC1 mesh + JC2 texture) came out:
+- **Good / decent (6 of 8):** Raddreg, Patdreg, Geenwee, Yolga, Marrdreg, and middling
+  Dogle.
+- **Poor:** Maryen (thin branches) and Ehsp (pose mismatch).
+- **Misleading names:** Tweengo/Twingo, Ticker/Tiki and Ehsp/Chamelemon are different
+  designs.

@@ -1,0 +1,14 @@
+{
+  "note": "JC1 merge-family creature -> same design in JC2 (model file in the first element block; the other three element variants are file + 120*k). Confirmed by eye.",
+  "pairs": [
+    {"jc1": 845, "jc1_name": "Marrdreg", "jc2": 1823, "jc2_name": "Mardreck", "rebuild": "decent"},
+    {"jc1": 846, "jc1_name": "Raddreg",  "jc2": 1827, "jc2_name": "Radreck",  "rebuild": "good"},
+    {"jc1": 847, "jc1_name": "Patdreg",  "jc2": 1826, "jc2_name": "Patadreck","rebuild": "good"},
+    {"jc1": 852, "jc1_name": "Dogle",    "jc2": 1859, "jc2_name": "Dongle",   "rebuild": "middling"},
+    {"jc1": 856, "jc1_name": "Geenwee",  "jc2": 1846, "jc2_name": "Ginui",    "rebuild": "good"},
+    {"jc1": 920, "jc1_name": "Yolga",    "jc2": 1843, "jc2_name": "Wriggler", "rebuild": "good"},
+    {"jc1": 883, "jc1_name": "Maryen",   "jc2": 1815, "jc2_name": "Mayen",    "rebuild": "poor (thin branches)"},
+    {"jc1": 867, "jc1_name": "Ehsp",     "jc2": 1855, "jc2_name": "Yo-Yo",    "rebuild": "poor (pose mismatch)"}
+  ],
+  "not_the_same_design": ["Tweengo/Twingo 1834", "Ticker/Tiki 1830", "Ehsp/Chamelemon 1854"]
+}
