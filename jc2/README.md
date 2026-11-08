@@ -241,3 +241,22 @@ therefore the opposite ends of what the names say; the matching is still consist
   palette slot.
 - Proportions mean patching node offsets. Because JC2 animates legs with IK, foot
   targets must be scaled about the hip as well.
+
+### Reusing the original textures (per-corner UVs) — PROTOTYPE
+
+`tools/corner_uv.py rebuilt.npz model.bin out.npz` gives a shared-mesh rebuild per-corner
+UVs into the beast's **original** texture, with no baking:
+- Each corner takes the UV of the nearest point on the original surface.
+- All three corners of a triangle come from the same UV island of the original
+  (islands = triangles sharing vertices with equal position and UV).
+
+A merge then takes one parent's look (its texture and its corner UVs) and blends the
+geometry; `tools/render_cuv_merge.py` renders this.
+
+Result on 1821 (from JC1 845) and 1856 (from JC1 867):
+- **Texture detail is preserved** (pixel-exact, no blur).
+- **Wrong shape correspondence still breaks it.** Eyes smear, 1821 loses an ear,
+  1856's spiral tail is missed, and in the merges features drift because vertex *i* is
+  not the same feature on both beasts.
+- **Conclusion:** texture reuse is solved; per-species shape correspondence is the
+  remaining (manual) work.
