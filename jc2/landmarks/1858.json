@@ -1,0 +1,12 @@
+{"_note": "JC2 1858. Front limbs splay sideways; front feet = the outer claws, back feet = the inner pair under the body.",
+ "nose":     [0.00, 0.65, -0.42],
+ "L_eye":    [0.17, 0.85, -0.25],
+ "L_mouth":  [0.15, 0.55, -0.35],
+ "chin":     [0.00, 0.50, -0.32],
+ "crown":    [0.00, 0.95, -0.18],
+ "withers":  [0.00, 0.98,  0.06],
+ "rump":     [0.00, 0.78,  0.39],
+ "belly":    [0.00, 0.21,  0.06],
+ "chest":    [0.00, 0.36, -0.27],
+ "L_ffoot":  [0.62, 0.03,  0.05],
+ "L_bfoot":  [0.33, 0.03,  0.20]}

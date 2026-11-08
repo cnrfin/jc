@@ -75,7 +75,7 @@ def joint_xforms(mSrc, mDst, jmap, pS, pD, s):
 def body_size(m):
     R = RR.roles(m); L = [R[k]['length'] for k in R if k.startswith('leg')]; return float(np.mean(L)) if L else 1.0
 
-def build(A_bytes, B_bytes, a_only, b_only, a_head=(), b_head=()):
+def build(A_bytes, B_bytes, a_only, b_only, a_head=(), b_head=(), lmA=None, lmB=None):
     mA, mB = J.parse_model(A_bytes), J.parse_model(B_bytes)
     PA, UVA, DA, W4A, TA = BP.mesh(mA); PB, UVB, DB, W4B, TB = BP.mesh(mB)
     pA, pB = bind_pos(mA), bind_pos(mB)
@@ -102,7 +102,17 @@ def build(A_bytes, B_bytes, a_only, b_only, a_head=(), b_head=()):
     body_tris = TA[~a_part]; used = np.unique(body_tris)
     remap = -np.ones(len(PA), int); remap[used] = np.arange(len(used))
     Bb = TB[~b_part]; pts, uvs, nrm = TF.sample_surface(PB, UVB, Bb, n=60000)
-    snapped = TF.fit(PAB[used], remap[body_tris], pts, nrm, prealigned=True, iters=((30, 3), (10, 3), (3, 4)))
+    pins = None
+    if lmA and lmB:
+        keys = [k for k in lmA if k in lmB]
+        la = np.array([lmA[k] for k in keys]); lb = np.array([lmB[k] for k in keys])
+        lb = pts[cKDTree(pts).query(lb)[1]]                                # targets on B's surface
+        idxA = used[cKDTree(PA[used]).query(la)[1]]                          # A's landmark vertices
+        from scipy.interpolate import RBFInterpolator
+        warp = RBFInterpolator(PAB[idxA], lb - PAB[idxA], kernel='thin_plate_spline', smoothing=1e-4)
+        PAB[used] = PAB[used] + warp(PAB[used])                              # carry every landmark onto its partner
+        pins = (remap[idxA], lb, 200.0)
+    snapped = TF.fit(PAB[used], remap[body_tris], pts, nrm, prealigned=True, pins=pins, iters=((30, 3), (10, 3), (3, 4)))
     PAB[used] = snapped
     # --- A's own parts in B's shape: ride their anchor bone's matched position
     #     (already done by the bone-map skinning above; they stay attached)
@@ -171,5 +181,15 @@ if __name__ == '__main__':
     def opt(name):
         if name in args: v = args[args.index(name) + 1]; return [int(x) for x in v.split(',') if x]
         return []
-    r = build(open(args[0], 'rb').read(), open(args[1], 'rb').read(), opt('--a-only'), opt('--b-only'), opt('--a-head'), opt('--b-head'))
+    def lm(name):
+        if name not in args: return None
+        import json
+        d = json.load(open(args[args.index(name) + 1])); out = {}
+        for k, v in d.items():
+            if k.startswith('_'): continue
+            x, up, z = v; out[k] = [x, -up, z]
+            if k.startswith('L_'): out['R_' + k[2:]] = [-x, -up, z]
+        return out
+    r = build(open(args[0], 'rb').read(), open(args[1], 'rb').read(), opt('--a-only'), opt('--b-only'), opt('--a-head'), opt('--b-head'),
+              lm('--lm-a'), lm('--lm-b'))
     np.savez(args[2], **r); print('vertices', len(r['shapeA']), 'triangles', len(r['tris']), 'groups', np.bincount(r['group']))

@@ -1,0 +1,12 @@
+{"_note": "JC2 1821 (boar). Read off ortho_grid views; coordinates are (x, up, z) with up = -Y. Paired names must match the other beast's file. 'L_' points are mirrored to x<0 automatically.",
+ "nose":     [0.00, 0.72, -0.73],
+ "L_eye":    [0.28, 0.77, -0.22],
+ "L_mouth":  [0.10, 0.60, -0.50],
+ "chin":     [0.00, 0.56, -0.37],
+ "crown":    [0.00, 1.00, -0.12],
+ "withers":  [0.00, 0.95,  0.07],
+ "rump":     [0.00, 0.82,  0.54],
+ "belly":    [0.00, 0.44,  0.19],
+ "chest":    [0.00, 0.50, -0.09],
+ "L_ffoot":  [0.20, 0.03,  0.00],
+ "L_bfoot":  [0.20, 0.03,  0.45]}

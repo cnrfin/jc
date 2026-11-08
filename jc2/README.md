@@ -381,3 +381,20 @@ Results for the eight pairs in `jc1_jc2_species.json`:
 - **Clean:** Marrdreg, Raddreg, Patdreg, Geenwee, Maryen.
 - **Usable:** Dogle.
 - **Noisier patterns:** Yolga and Ehsp.
+
+### Hand-placed landmarks (Claude as the landmark placer) — EXPERIMENT
+
+- **Placing:** `tools/ortho_grid.py model.bin out.png [--points pts.json]` renders
+  orthographic side/front/top views with a labelled grid. Feature positions are read off
+  it and stored in `landmarks/<file>.json` (nose, eyes, mouth corners, chin, crown,
+  withers, rump, belly, chest, front and back feet; `L_` points mirror automatically).
+- **Fitting:** `pair_family.py ... --lm-a A.json --lm-b B.json` warps A's shared body so
+  every landmark lands on its partner, then snaps to B's surface with the landmark
+  vertices pinned.
+- **Heads morph** like the rest of the body (no head swap).
+
+Result for 1821 ↔ 1858:
+- **Better:** eyes and faces now track the right features through the sweep. The 1858
+  look row is clean from 0% to 100%.
+- **Still rough:** the 1821-look row at 75–100% is boxy, with stretched texture, and
+  the mace separates from the body there.

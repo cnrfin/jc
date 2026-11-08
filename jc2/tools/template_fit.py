@@ -64,7 +64,7 @@ def landmarks(P):
     out += [P[P[:, 2].argmax()], P[P[:, 2].argmin()], P[P[:, 1].argmin()], P.mean(0)]
     return np.array(out)
 
-def fit(A_P, A_tris, B_pts, B_nrm, pairs=None, prealigned=False, iters=((40, 4), (12, 4), (4, 4), (1.5, 4), (0.5, 6))):
+def fit(A_P, A_tris, B_pts, B_nrm, pairs=None, prealigned=False, pins=None, iters=((40, 4), (12, 4), (4, 4), (1.5, 4), (0.5, 6))):
     wid = weld(A_P); nW = wid.max() + 1
     Vw = np.zeros((nW, 3)); np.add.at(Vw, wid, A_P); cnt = np.bincount(wid, minlength=nW); Vw /= cnt[:, None]
     Tw = wid[A_tris]; Tw = Tw[(Tw[:, 0] != Tw[:, 1]) & (Tw[:, 1] != Tw[:, 2]) & (Tw[:, 0] != Tw[:, 2])]
@@ -94,9 +94,13 @@ def fit(A_P, A_tris, B_pts, B_nrm, pairs=None, prealigned=False, iters=((40, 4),
             np.add.at(acc, i2, B_pts); np.add.at(cw, i2, 1)
             rev = cw > 0; revT = np.zeros_like(V); revT[rev] = acc[rev] / cw[rev, None]
             wr = np.where(rev, 0.5, 0.0)
-            Wd = sp.diags(w + wr)
+            wp = np.zeros(nW); pt = np.zeros_like(V)
+            if pins is not None:                                   # landmark vertices held on their targets
+                pidx, ptgt, pw = pins
+                np.add.at(wp, wid[pidx], pw); np.add.at(pt, wid[pidx], pw * ptgt)
+            Wd = sp.diags(w + wr + wp)
             M = (stiff * (L.T @ L) + Wd).tocsc()
-            rhs = stiff * (L.T @ delta) + (w[:, None] * B_pts[j] + wr[:, None] * revT)
+            rhs = stiff * (L.T @ delta) + (w[:, None] * B_pts[j] + wr[:, None] * revT) + pt
             solve = spla.factorized(M)
             V = np.stack([solve(rhs[:, k]) for k in range(3)], 1)
     return V[wid]
