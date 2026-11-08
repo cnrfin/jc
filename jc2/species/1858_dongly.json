@@ -1,0 +1,70 @@
+{
+ "_note": "creature_gen parameters fitted by eye to JC2 1858 Dongly (first form). (up, z) pairs; up = -Y.",
+ "torso_back": [
+  0.55,
+  0.45
+ ],
+ "torso_front": [
+  0.6,
+  -0.25
+ ],
+ "hump": 0.72,
+ "torso_w": 0.4,
+ "torso_h": 0.36,
+ "torso_round": 0.35,
+ "head_mid": [
+  0.72,
+  -0.38
+ ],
+ "snout": [
+  0.6,
+  -0.48
+ ],
+ "head_w": 0.3,
+ "head_h": 0.28,
+ "head_prof": [
+  0.9,
+  1.0,
+  1.05,
+  1.05,
+  1.0,
+  0.95,
+  0.85,
+  0.75,
+  0.6,
+  0.4
+ ],
+ "hip_x": 0.3,
+ "f_hip": 0.25,
+ "f_reach": 0.05,
+ "f_splay": 0.32,
+ "f_len": 0.45,
+ "f_r": 0.12,
+ "b_hip": 0.25,
+ "b_reach": 0.0,
+ "b_splay": 0.03,
+ "b_len": 0.4,
+ "b_r": 0.12,
+ "knee_bend": 0.06,
+ "claw": 0.16,
+ "tail_tip": [
+  0.33,
+  0.85
+ ],
+ "tail_r": 0.07,
+ "tail_arch": -0.1,
+ "mace": 0.14,
+ "spikes": 0.28,
+ "eye_r": 0.06,
+ "eye_up": 0.15,
+ "eye_fwd": -0.05,
+ "horn_x": 0.1,
+ "horn_z": -0.12,
+ "horn_out": 0.02,
+ "horn_len": -0.3,
+ "horn_fwd": -0.08,
+ "horn_r": 0.05,
+ "ear_len": 0.0,
+ "ear_w": 0.0,
+ "ear_out": 0.0
+}

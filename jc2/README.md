@@ -434,3 +434,25 @@ palette hue-rotated toward the other. Every step reads as one coherent creature.
 
 `designed/designed_merge_family.glb` is Tuskrunner with Macebulk as a shape key: drag
 the shape-key slider in Blender to merge. It validates with 0 errors and 0 warnings.
+
+## Blender pipeline (bpy 5.2, EL4CTEO/blender-skills workflow)
+
+Blender 5.2 runs headless here as the `bpy` module from PyPI.
+- `tools/fit_overlay.py model.bin params.json out.png`: overlays the shared creature mesh
+  on a JC2 model in side/front/top views, for fitting its parameters by eye
+  (`species/*.json`).
+- `tools/bl_wrap_bake.py model.bin params.json out.npz`, in Blender:
+  1. builds the shared mesh from the species' parameters;
+  2. makes the shared UV layout once (Smart UV Project, saved to
+     `species/shared_uv.npy`) and reuses it;
+  3. shrinkwraps the body parts onto the JC2 model;
+  4. bakes the JC2 texture onto the shared UVs with Cycles (selected → active, short
+     rays, then long rays for misses).
+
+Redoble 1822 ↔ Dongly 1858: both rebuilt on 1,532 vertices, with identical topology and
+UVs. The merge sweep is `designed/jc2_pair_blender_merge.png`; it is live in
+`designed/merge_cocoon.html` ("JC2 baked" pair).
+- **Better than the earlier transfers:** the baked textures are clean on the body and
+  face.
+- **Still weak:** black bake misses on spikes and the mace, a lumpy silhouette from the
+  coarse mesh, and claws and feet only approximate.
