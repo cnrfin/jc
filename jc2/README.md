@@ -406,3 +406,10 @@ forms. Redoble 1822 (boar family, branch A, first form) ↔ Dongly 1858 (first f
 - **Better than every earlier pair:** both looks read as hybrids across most of the
   sweep.
 - **Still rough:** only Redoble's look at 100% (boxy).
+
+**JC1's texture rule applied strictly** (`tools/render_hue_merge.py pairAB.npz A.bin B.bin out.png`):
+- **One texture:** the base parent's, hue-rotated toward the other parent in proportion
+  to the merge.
+- **Inherited parts** (e.g. Dongly's mace) are recoloured to the base texture's palette,
+  so no second look appears on the creature.
+- **Result:** noticeably cleaner than showing either parent's own texture.
