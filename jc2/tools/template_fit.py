@@ -64,18 +64,22 @@ def landmarks(P):
     out += [P[P[:, 2].argmax()], P[P[:, 2].argmin()], P[P[:, 1].argmin()], P.mean(0)]
     return np.array(out)
 
-def fit(A_P, A_tris, B_pts, B_nrm, pairs=None, iters=((40, 4), (12, 4), (4, 4), (1.5, 4), (0.5, 6))):
+def fit(A_P, A_tris, B_pts, B_nrm, pairs=None, prealigned=False, iters=((40, 4), (12, 4), (4, 4), (1.5, 4), (0.5, 6))):
     wid = weld(A_P); nW = wid.max() + 1
     Vw = np.zeros((nW, 3)); np.add.at(Vw, wid, A_P); cnt = np.bincount(wid, minlength=nW); Vw /= cnt[:, None]
     Tw = wid[A_tris]; Tw = Tw[(Tw[:, 0] != Tw[:, 1]) & (Tw[:, 1] != Tw[:, 2]) & (Tw[:, 0] != Tw[:, 2])]
     L = laplacian(nW, Tw)
     # initial alignment: map template bbox onto target bbox (both stand on y=0 facing +z)
     from scipy.interpolate import RBFInterpolator
-    la, lb = landmarks(Vw)[4:], landmarks(B_pts)[4:]                 # nose, tail, top, centre
-    if pairs is not None and len(pairs[0]):
-        la, lb = np.r_[la, pairs[0]], np.r_[lb, pairs[1]]            # skeleton roles: legs, neck, head, tail
-    warp = RBFInterpolator(la, lb - la, kernel='thin_plate_spline', smoothing=1e-3)
-    V = Vw + warp(Vw)                                                 # landmarks onto landmarks
+    if prealigned:
+        V = Vw.copy(); la = None
+    else:
+        la, lb = landmarks(Vw)[4:], landmarks(B_pts)[4:]                 # nose, tail, top, centre
+    if la is not None:
+        if pairs is not None and len(pairs[0]):
+            la, lb = np.r_[la, pairs[0]], np.r_[lb, pairs[1]]        # skeleton roles: legs, neck, head, tail
+        warp = RBFInterpolator(la, lb - la, kernel='thin_plate_spline', smoothing=1e-3)
+        V = Vw + warp(Vw)                                             # landmarks onto landmarks
     treeB = cKDTree(B_pts)
     for stiff, n in iters:
         for _ in range(n):
@@ -97,14 +101,15 @@ def fit(A_P, A_tris, B_pts, B_nrm, pairs=None, iters=((40, 4), (12, 4), (4, 4), 
             V = np.stack([solve(rhs[:, k]) for k in range(3)], 1)
     return V[wid]
 
-def bake(A_UV, A_tris, Vfit, B_pts, B_uvs, B_tex, size=256):
+def bake(A_UV, A_tris, Vfit, B_pts, B_uvs, B_tex, size=256, aspect=1.0):
     """Bake target texture into template UV layout: texel -> fitted 3D point -> nearest target point -> target UV."""
-    tree = cKDTree(B_pts); out = np.zeros((size, size, 4), np.uint8); filled = np.zeros((size, size), bool)
+    W_, H_ = size, int(round(size * aspect))
+    tree = cKDTree(B_pts); out = np.zeros((H_, W_, 4), np.uint8); filled = np.zeros((H_, W_), bool)
     th, tw = B_tex.shape[:2]
     for t in A_tris:
-        uv = A_UV[t] * size; P3 = Vfit[t]
+        uv = A_UV[t] * [W_, H_]; P3 = Vfit[t]
         x0, y0 = np.floor(uv.min(0)).astype(int); x1, y1 = np.ceil(uv.max(0)).astype(int)
-        x0, y0 = max(x0, 0), max(y0, 0); x1, y1 = min(x1, size - 1), min(y1, size - 1)
+        x0, y0 = max(x0, 0), max(y0, 0); x1, y1 = min(x1, W_ - 1), min(y1, H_ - 1)
         if x1 < x0 or y1 < y0: continue
         gx, gy = np.meshgrid(np.arange(x0, x1 + 1) + .5, np.arange(y0, y1 + 1) + .5)
         (ax, ay), (bx, by), (cx, cy) = uv

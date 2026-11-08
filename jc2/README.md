@@ -176,3 +176,36 @@ python -m spimdisasm singleFileDisasm SLUS_203.09 disasm/asm \
   The same layout is also used by `func_00241A70` and `func_004358C0`.
 - Beast species names (Getchu, Volkaiser, Mothmanti...) sit around `0x688E00`. Item
   records (stride 0x48, e.g. "Cocoon containing a" + species) are at `0x52CEF0`.
+
+## Rebuilding JC2 beasts on the JC1 family mesh (the JC1 way) — PROTOTYPE
+
+JC1's 49 family creatures share one mesh (1,464 vertices), **one UV layout** (checked:
+833, 845, 860 and 867 have identical UV sets) and one 25-bone rig. A merge blends
+vertices and bone lengths, ORs the part groups and takes **one** parent's texture,
+hue-rotated. To get JC1-style merges in JC2, each mergeable JC2 species is rebuilt as a
+member of that family:
+
+| tool | what |
+|---|---|
+| `tools/jc1_family.py` | loads a JC1 family creature from `models/family`, assembled in bind pose (Merge Studio's `poseBones`) |
+| `tools/rig_roles.py` | labels a JC2 rig's IK chains: four legs (hip → mid → foot), neck, head, tail |
+| `tools/jc1_to_jc2.py` | rebuilds a JC2 beast on the JC1 mesh (steps below) |
+| `tools/render_jc1_merge.py` | originals vs rebuilds, plus the merge sweep with one texture |
+| `tools/rebuilt_to_glb.py` | rebuilt beast as a textured GLB for hand-finishing; hidden part groups go in a separate mesh |
+
+`jc1_to_jc2.py` works in these steps:
+1. Start from the closest JC1 creature.
+2. Subdivide once (1,464 → about 3,300 vertices on the visible groups).
+3. Warp by matched bone roles: JC1 bones 3–5 / 6–8 are the front legs, 17–19 / 20–22
+   the back legs, 9–10 neck→head, 16 → 23 → 24 the tail.
+4. Wrap the visible part groups onto the JC2 surface.
+5. Bake the JC2 texture into the shared JC1 UV layout at 2×.
+
+First test: 1821 and 1858 both start from Marrdreg (845).
+- **1821 works:** it rebuilds recognisably, and a 50% merge using one texture reads as
+  a real in-between creature.
+- **1858 is rough:** its spikes, mace tail and splayed feet have no matching part on
+  Marrdreg.
+- **The fix is per-species feature mapping:** choose which JC1 part group carries ears,
+  horns or spikes (as JC1 reuses arm bones for heads), plus eye and mouth landmarks.
+  Then hand-finish in Blender.
