@@ -1,0 +1,4 @@
+{"_note": "JC2 1893 Dethalcoch (seed form). (x, up, z); up = -Y, head toward -z. Pairs with 1785_seed.json.",
+ "L_hip": [0.16, 0.42, -0.03], "L_knee": [0.13, 0.22, 0.0], "L_foot": [0.12, 0.05, 0.03],
+ "top": [0.0, 1.12, 0.0], "bottom": [0.0, 0.45, 0.0], "front": [0.0, 0.75, -0.38], "back": [0.0, 0.75, 0.38],
+ "L_side": [0.38, 0.75, 0.0], "tail_tip": [0.0, 0.3, 0.55], "chin": [0.0, 0.5, -0.28]}

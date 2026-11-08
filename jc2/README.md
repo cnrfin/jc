@@ -456,3 +456,24 @@ UVs. The merge sweep is `designed/jc2_pair_blender_merge.png`; it is live in
   face.
 - **Still weak:** black bake misses on spikes and the mace, a lumpy silhouette from the
   coarse mesh, and claws and feet only approximate.
+
+## Seed forms remeshed from the game models (current best)
+
+`tools/bl_pair_remesh.py A.bin B.bin out.npz --lm-a A.json --lm-b B.json`, in Blender:
+1. **Remesh A:** A's own model is voxel-remeshed (0.02) and decimated to about 12k
+   triangles, so the family member is A's actual shape.
+2. **Shared UVs** from Smart UV Project.
+3. **Fit onto B:** a landmark thin-plate warp (hips, knees, feet, body extremes, chin,
+   tail tip; `landmarks/*_seed.json`), then three shrinkwrap + corrective-smooth passes
+   onto B.
+4. **Bake** A's texture onto shape A and B's onto shape B with Cycles.
+
+`tools/render_seed_pair.py` renders the result. The family is built both ways
+(A → B and B → A), and a merge uses the family built on the look parent.
+
+Devaluch 1785 ↔ Dethalcoch 1893 (`designed/seed_pair_merge.png`; "JC2 seed forms" in
+`designed/merge_cocoon.html`):
+- **Rebuilt parents** match the originals closely.
+- **Dethalcoch's look** reads well from 25% to 100%.
+- **Devaluch's look** degrades at 75–100%: its side fins have no counterpart on
+  Dethalcoch.
