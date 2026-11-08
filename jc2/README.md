@@ -38,22 +38,41 @@ What is in it (5,095 non-empty files):
 
 ## The model format — started
 
-A model file is `u32 n; u32 offset[n]` followed by the sections. The geometry section
-starts with ASCII tags `0IVX00.1`, `LDMX00.2` (or `LDMX00.1`), `NORM00.2`, then `SKIN00.1`
-on skinned models. The body is PS2 VIF/GIF packet data (UNPACK `0x6C` commands, GIF
-tags, float vertex data), so meshes are pre-built DMA chains, not a TMD-style list. A
-typical beast-sized file (e.g. 1691) is 2 sections: geometry 0x58E0 bytes + a TIM2.
+A model file is `u32 n; u32 offset[n]` followed by the sections. A beast (e.g. 1821) has
+4: a 16-byte flags block, the geometry (`0IVX00.1` / `LDMX00.1` / `NIKS00.1` tags), one
+`TIM2` texture, and an 11-entry block that looks like animation data.
 
-Each geometry section is a run of VIF batches: `UNPACK V4-32` (header, addr 0),
-`UNPACK V3-32` (positions, addr 4, `num` = vertex count), `UNPACK V2-32` (UVs),
-`UNPACK V4-8` (colour/normal). Here, one batch means one strip of up to `num` vertices.
+**Decoded and verified by rendering** (`tools/xmdl.py`, `tools/tim2.py`,
+`tools/render_tex.py`):
+
+- **Node table** at geometry `+0xB0`, count at `+0x24`, stride 0x50:
+  `u32 type; u32 0; u32 0; s16 a; s16 depth; s16 parent+1; s16 firstChild+1;
+  u32 nextSibling+1; ...; vec4 T @+0x20; vec4 R (radians) @+0x30; vec4 S @+0x40`.
+  `type` bits: 2 = has child, 4 = has sibling, 1 = always set. `a` cycles 4/5/6, so a
+  joint is three single-axis rotation nodes. That is why a beast has 61–96 nodes but
+  only about 24 skinning slots.
+- **Geometry** is a VIF DMA chain after the node table. Each batch is:
+  - `REF` tags, which upload up to 4 palette matrices.
+  - A `CNT` tag whose unused address field holds the batch's 4 palette slots (0xFF =
+    none).
+  - `UNPACK`s with `STCYCL 4,1`, giving four quadwords per vertex:
+    - `0x45` V3-32 position, already in bind pose (world space)
+    - `0x46` V2-32 UV (0..1, no flip)
+    - `0x47` V4-16 normal (`x,y,z` /32767, `w` = 0x7FFF)
+    - `0x48` V4-8 weights, one byte per palette slot, summing to 255
+  - Each batch is one triangle strip of `NLOOP` vertices (GIF tag at `0x41`).
+- **TIM2**: standard, 8-bit indexed with a CSM1-swizzled 256-colour CLUT, alpha 0..128.
+
+**Open:** the table that maps palette slot (0..23) to node, and the animation block.
+Both are best read from the loader in the decompiled C rather than guessed.
 
 ## Do beasts share topology like JC1? — NO (CONFIRMED)
 
-`tools/xmdl_sig.py` takes each model's list of V3-32 vertex counts (one entry per batch)
-and groups the 881 skinned models by it:
+Parsed exactly with `tools/xmdl.py`: 879 skinned models, **194 distinct meshes**
+(254 distinct position sets) and 61–96 nodes each, so there is no shared rig either.
+(The earlier `tools/xmdl_sig.py` heuristic gave 195; same answer.)
 
-- **195 distinct signatures.** The largest group is 20 files.
+- The largest group of identical meshes is 20 files.
 - Inside a group, the files are **the same beast**: the same mesh is stored once per element
   or stage (the pattern repeats every 120 files, e.g. 1821/1825/1829, 1941/1945/1949,
   2061..., 2181...). Positions are byte-identical, or at most 3 variants differing by
