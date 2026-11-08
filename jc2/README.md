@@ -260,3 +260,23 @@ Result on 1821 (from JC1 845) and 1856 (from JC1 867):
   not the same feature on both beasts.
 - **Conclusion:** texture reuse is solved; per-species shape correspondence is the
   remaining (manual) work.
+
+### Two-beast merge family (single mesh built from the two references) — PROTOTYPE
+
+`tools/pair_family.py A.bin B.bin out.npz --a-only NODES --b-only NODES` and
+`tools/render_pair.py`.
+
+The single mesh is A's own mesh plus B's unique parts. A's ears and tail are a group
+hidden on B, B's mace tail a group hidden on A (JC1's part-group rule). Only the shared
+body morphs into B's shape:
+- through a joint map from A's bones to B's (legs by arc length, spine/head/tail chains),
+- then a gentle snap onto B's surface.
+
+Each beast keeps its original texture; B's look on the shared body uses per-corner UVs.
+
+Result for 1821 + 1858 (`--a-only 46,52,24 --b-only 6`):
+- **Member A is exactly the original.**
+- **Member B is recognisable**: body, legs, mace tail.
+- **The look-A merges read as hybrids** at 25–75%.
+- **Still weak:** B's horned head and jaw are not reproduced (the head is morphed, not
+  grouped), and legs distort near 100%.
