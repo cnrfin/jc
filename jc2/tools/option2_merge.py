@@ -76,7 +76,7 @@ def hue_rotate(tex, dh):
     out = tex.copy(); out[..., :3] = np.array(Image.fromarray(a, 'HSV').convert('RGB')); return out
 
 # ------------------------------------------------------------------ multi-texture renderer
-def render(parts, yaw, size=260, frame=None):
+def render(parts, yaw, size=260, frame=None, shade=False):
     c, s_ = math.cos(yaw), math.sin(yaw); Rm = np.array([[c, 0, s_], [0, 1, 0], [-s_, 0, c]])
     allV = np.concatenate([p[0].reshape(-1, 3) for p in parts]) @ Rm.T; allV[:, 1] *= -1
     lo, hi = (allV.min(0), allV.max(0)) if frame is None else frame
@@ -86,6 +86,9 @@ def render(parts, yaw, size=260, frame=None):
         V = T @ Rm.T; V[..., 1] *= -1
         X = (V[..., 0] - (lo[0] + hi[0]) / 2) * sc + size / 2; Y = size / 2 - (V[..., 1] - (lo[1] + hi[1]) / 2) * sc; Z = V[..., 2]
         th, tw = tex.shape[:2]
+        if shade:
+            nrm = np.cross(V[:, 1] - V[:, 0], V[:, 2] - V[:, 0]); nrm /= np.linalg.norm(nrm, axis=1, keepdims=True) + 1e-12
+            L = np.array([-0.4, 0.75, -0.5]); L /= np.linalg.norm(L); lit = 0.45 + 0.55 * np.abs(nrm @ L)
         for t in range(len(T)):
             xs, ys, zs = X[t], Y[t], Z[t]
             x0, x1 = int(max(0, xs.min())), int(min(size - 1, xs.max())) + 1
@@ -100,7 +103,9 @@ def render(parts, yaw, size=260, frame=None):
             z = l0 * zs[0] + l1 * zs[1] + l2 * zs[2]; sub = zb[y0:y1, x0:x1]; m &= z < sub
             u = l0 * U[t, 0, 0] + l1 * U[t, 1, 0] + l2 * U[t, 2, 0]; v = l0 * U[t, 0, 1] + l1 * U[t, 1, 1] + l2 * U[t, 2, 1]
             px = np.clip((u % 1) * tw, 0, tw - 1).astype(int); py = np.clip((v % 1) * th, 0, th - 1).astype(int)
-            sub[m] = z[m]; img[y0:y1, x0:x1][m] = tex[py[m], px[m], :3]
+            col = tex[py[m], px[m], :3]
+            if shade: col = (col * lit[t]).astype(np.uint8)
+            sub[m] = z[m]; img[y0:y1, x0:x1][m] = col
     return img, (lo, hi)
 
 # ------------------------------------------------------------------ the merge

@@ -413,3 +413,24 @@ forms. Redoble 1822 (boar family, branch A, first form) ↔ Dongly 1858 (first f
 - **Inherited parts** (e.g. Dongly's mace) are recoloured to the base texture's palette,
   so no second look appears on the creature.
 - **Result:** noticeably cleaner than showing either parent's own texture.
+
+## A merge family designed from scratch (the JC1 way, end to end)
+
+`tools/creature_gen.py` builds every creature with **one generator of fixed topology**
+(1,532 vertices, 2,952 triangles, shared UVs), so any two creatures are each other's
+morph targets, as in JC1's family.
+- **Parts:** torso, neck/head, 4 legs with claws, tail, eyes, horns, ears, 5 back
+  spikes, 6 mace spikes.
+- **Absent parts:** a part a creature lacks has zero size (JC1's hidden part groups).
+- **Colour:** a small gradient palette per creature (back → belly).
+
+Two designs:
+- **Tuskrunner** (after Redoble 1822): long snout, tusk-horns, ears, slim legs.
+- **Macebulk** (after Dongly 1858): round body, back spikes, splayed stubby legs, mace
+  tail.
+
+`tools/render_creatures.py` renders the JC1-style merge: vertex lerp, one parent's
+palette hue-rotated toward the other. Every step reads as one coherent creature.
+
+`designed/designed_merge_family.glb` is Tuskrunner with Macebulk as a shape key: drag
+the shape-key slider in Blender to merge. It validates with 0 errors and 0 warnings.
