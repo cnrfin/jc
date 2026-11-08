@@ -477,3 +477,22 @@ Devaluch 1785 ↔ Dethalcoch 1893 (`designed/seed_pair_merge.png`; "JC2 seed for
 - **Dethalcoch's look** reads well from 25% to 100%.
 - **Devaluch's look** degrades at 75–100%: its side fins have no counterpart on
   Dethalcoch.
+
+## Designed seed pair with feature-wise blending
+
+`tools/seedgen.py` is one generator with a fixed topology (5,214 vertices, 10,200
+triangles). Every feature exists on every creature and has continuous controls:
+- egg body;
+- 20 fixed spike sites, each with length, base radius and **tip radius** (sharpness);
+  site 0 is the crown horn;
+- eyes with pupils, leaf ears, flat clawed arms;
+- a frilled skirt;
+- legs with three front toes and one back toe;
+- a flattened, flaring tail.
+
+**Puffluch** (after Devaluch) and **Shellcoch** (after Dethalcoch) blend part by part:
+arms shrink, bumps lengthen and sharpen toward the horn's sharpness, the horn shortens,
+legs stretch and gain talons, and the skirt grows in.
+
+Rendered with `tools/render_seedgen.py` (`designed/seedgen_merge.png`); live in
+`designed/merge_cocoon.html` ("Designed seeds").
