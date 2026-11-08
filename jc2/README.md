@@ -209,3 +209,35 @@ First test: 1821 and 1858 both start from Marrdreg (845).
 - **The fix is per-species feature mapping:** choose which JC1 part group carries ears,
   horns or spikes (as JC1 reuses arm bones for heads), plus eye and mouth landmarks.
   Then hand-finish in Blender.
+
+## Option 2: merges that keep the original art — PROTOTYPE
+
+The JC1-mesh rebuild (above) degrades the art: automatic wrapping can't place
+features, and JC1's quality came from hand-made art. Option 2 leaves every JC2 beast
+exactly as Genki made it and makes the merge visible through three channels.
+
+The prototype is `tools/option2_merge.py base.bin material.bin out.png [swap:a:b | add:a:b:anchor]`.
+
+1. **Proportions.** Matched leg lengths, relative to each beast's mean leg, and overall
+   body size are blended into the base skeleton. The base mesh is re-skinned with its
+   own weights.
+2. **Hue.** The base texture's hue is rotated toward the material's mean hue (JC1's rule).
+3. **Part transplant** (`tools/beast_parts.py`). A part is a skeleton subtree, found from
+   each vertex's dominant joint, and it keeps its own texture.
+   - `swap:a:b` replaces the base's subtree at node `a` with the material's subtree at `b`,
+     mapping bone frame to bone frame.
+   - `add:a:b:anchor` attaches the material's subtree `b` to base node `a`, using
+     translation and scale only (all beasts face −Z with −Y up).
+
+Examples:
+- 1821 + 1858 `swap:24:6` gives the boar 1858's mace tail.
+- 1858 + 1821 `add:31:46:36 add:31:52:36` gives 1858 the boar's ears.
+
+**Facing correction:** these beasts face −Z. In `rig_roles.py`, "head" and "tail" are
+therefore the opposite ends of what the names say; the matching is still consistent.
+
+**What the game will need:**
+- A transplanted part becomes extra DMA packets rigidly skinned to the base's anchor
+  palette slot.
+- Proportions mean patching node offsets. Because JC2 animates legs with IK, foot
+  targets must be scaled about the hip as well.
